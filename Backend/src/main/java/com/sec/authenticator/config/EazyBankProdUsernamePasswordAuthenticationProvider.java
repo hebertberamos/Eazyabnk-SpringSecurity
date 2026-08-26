@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -12,9 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("!prod")
+@Profile("prod")
 @RequiredArgsConstructor
-public class EazyBankUsernamePasswordAuthenticationProvider implements AuthenticationProvider {
+public class EazyBankProdUsernamePasswordAuthenticationProvider implements AuthenticationProvider {
 
     private final EazyBankUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
@@ -24,7 +25,13 @@ public class EazyBankUsernamePasswordAuthenticationProvider implements Authentic
         String username = authentication.getName();
         String rawPwd = authentication.getCredentials().toString();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        return new UsernamePasswordAuthenticationToken(username, rawPwd, userDetails.getAuthorities());
+
+        if(passwordEncoder.matches(rawPwd, userDetails.getPassword())) {
+            // here is possible to add othe type of validations like the age and whatever.
+            return new UsernamePasswordAuthenticationToken(username, rawPwd, userDetails.getAuthorities());
+        } else {
+            throw new BadCredentialsException("Invalid credentials...");
+        }
     }
 
     @Override

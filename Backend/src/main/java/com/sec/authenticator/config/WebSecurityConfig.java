@@ -17,7 +17,9 @@ public class WebSecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) {
-        http.csrf(csrf -> csrf.disable())
+        http
+                .redirectToHttps(https -> https.disable()) // Accepts only HTTP request.
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
                 .requestMatchers("/notices", "/contact", "/register").permitAll());

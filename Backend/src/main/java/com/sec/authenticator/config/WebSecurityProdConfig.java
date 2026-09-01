@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 
 @Configuration
 @Profile("prod")
@@ -15,7 +16,9 @@ public class WebSecurityProdConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) {
-        http.csrf(csrf -> csrf.disable())
+        http
+                .redirectToHttps((https) -> https.requestMatchers(AnyRequestMatcher.INSTANCE)) // Accepts only HTTPS request.
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
                 .requestMatchers("/notices", "/contact", "/register").permitAll());

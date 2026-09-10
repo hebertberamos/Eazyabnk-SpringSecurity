@@ -1,5 +1,6 @@
 package com.sec.authenticator.config;
 
+import com.sec.authenticator.exceptionhandling.CustomBasicAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -18,13 +19,14 @@ public class WebSecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
-                .redirectToHttps(https -> https.disable()) // Accepts only HTTP request.
+                .sessionManagement(smc -> smc.invalidSessionUrl("/invalidSession"))
+                .redirectToHttps(https -> https.disable()) // Only HTTP.
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
-                .requestMatchers("/notices", "/contact", "/register").permitAll());
+                .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/.well-known/appspecific/com.chrome.devtools.json", "/invalidSession").permitAll());
         http.formLogin(Customizer.withDefaults());
-        http.httpBasic(Customizer.withDefaults());
+        http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         return http.build();
     }
 
